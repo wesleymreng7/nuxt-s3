@@ -1,0 +1,26 @@
+name: CI/CD Pipeline S3
+on:
+  push:
+    branches: [ master ]
+jobs:       
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+    - name: Checkout to repo
+      uses: actions/checkout@v3
+
+    - name: Set AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: arn:aws:iam::584021974220:role/github-s3
+        aws-region: us-east-2
+    - name: Build static site
+      run: yarn install && yarn build
+
+    - name: Deploy static site to S3 bucket
+      run: aws s3 sync ./dist/ s3://nuxt-s3-deploy --delete
